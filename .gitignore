@@ -1,0 +1,17 @@
+#modules
+node_modules
+
+#yarn lock
+yarn.lock
+
+#vscode history
+.history
+
+#env
+.env
+
+#build
+.next
+
+#workspace setting
+.vscode
