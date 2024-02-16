@@ -76,10 +76,10 @@
 	}
 }
 
-.tiptap p {
+.tiptap p,
+.tiptap figure {
 	margin: 0;
 }
-
 .tiptap ul,
 .tiptap ol {
 	padding: 0 1rem;

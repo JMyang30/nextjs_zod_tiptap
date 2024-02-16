@@ -32,20 +32,43 @@ const handleImageDrop = (view: EditorView, event: DragEvent, response: string, f
 	image.onload = () => {
 		const { schema } = view.state;
 		const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY });
+		// 로컬 파일 이미지 미리보기 용으로 삽입
 		const node = schema.nodes.image.create({ src: response });
-		const transaction = view.state.tr.insert(coordinates!.pos, node);
-		view.dispatch(transaction);
+
+		// const transaction = view.state.tr.insert(coordinates!.pos, node);
+
+		// 로컬 파일 src 에서 서버 업로드 파일 src 로 변경
+		// coordinates!.pos = 현재 편집 위치
+		const transaction2 = view.state.tr.setNodeAttribute(coordinates!.pos, 'src', response);
+
+		// view 업데이트
+		view.dispatch(transaction2);
 	};
 };
 
 // input type file 첨부된 이미지 tiptap 에디터 삽입
-const inputTypeFileAttach = (): boolean | void => {};
 
 // 이미지 파일 에디터에 드래그 드랍 지원
 // Promise<boolean> 리턴값 사용시 type 오류
-const dragAndDropImage = (view: EditorView, event: DragEvent, slice: Slice, moved: boolean): boolean | void => {
+const dragAndDropImage = (
+	view: EditorView,
+	event: DragEvent,
+	slice: Slice,
+	moved: boolean,
+	setEditable: React.Dispatch<React.SetStateAction<boolean>>,
+): boolean | void => {
 	if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]) {
 		const file: File = event.dataTransfer.files[0];
+
+		const previewURL = URL.createObjectURL(file);
+
+		const { schema } = view.state;
+		const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY });
+		const node = schema.nodes.image.create({ src: previewURL });
+		const transaction = view.state.tr.insert(coordinates!.pos, node);
+
+		view.dispatch(transaction);
+		setEditable((prev: boolean) => !prev);
 
 		if (isValidImage(file)) {
 			uploadImage(file)
@@ -53,6 +76,9 @@ const dragAndDropImage = (view: EditorView, event: DragEvent, slice: Slice, move
 					// 이미지 로딩 및 삽입
 					// response = 이미지 db 수신 url
 					handleImageDrop(view, event, response, file);
+				})
+				.then((r) => {
+					// setEditable((prev: boolean) => !prev);
 				})
 				.catch((error) => {
 					alert('이미지 업로드 중 오류가 발생했습니다.');
@@ -67,4 +93,4 @@ const dragAndDropImage = (view: EditorView, event: DragEvent, slice: Slice, move
 	return false; // 기본 동작 사용
 };
 
-export { dragAndDropImage, uploadImage, isValidImage, inputTypeFileAttach };
+export { dragAndDropImage, uploadImage, isValidImage };

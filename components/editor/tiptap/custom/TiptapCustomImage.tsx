@@ -14,7 +14,7 @@ function TiptapCustomImage(props: NodeViewProps) {
 	return (
 		<NodeViewWrapper
 			ref={containerRef}
-			as="div"
+			as="figure"
 			draggable
 			data-drag-handle
 			onClick={() => setEditing(true)}

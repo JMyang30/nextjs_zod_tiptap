@@ -1,99 +1,84 @@
 'use client';
 
-import { Bold, Strikethrough, Italic, List, ListOrdered, Heading1, Youtube, Image as ImageIcon } from 'lucide-react';
-
 import type { Editor } from '@tiptap/react';
-import { useCallback } from 'react';
+import LucideIcon from '@/components/icons/LucideIcon';
+
 import { Toggle } from '@/components/ui/toggle';
 
-type Props = {
-	editor: Editor | null;
-};
-function Toolbar({ editor }: Props) {
-	// youtube 영상 업로드 기능
-	const setYoutube = useCallback(() => {
-		const url = prompt('enter your youtube url');
+import useCustomToolbar from './custom/useTiptapCustomToolbar';
 
-		if (url === null) {
-			return;
-		}
+function Toolbar({ editor }: { editor: Editor }) {
+	const { addImage, addInputImage, setYoutube } = useCustomToolbar({ editor });
 
-		// empty
-		if (url === '') {
-			editor?.chain().focus().extendMarkRange('youtube').clearContent().run();
-			return;
-		}
-
-		editor?.commands.setYoutubeVideo({
-			src: url,
-			width: 320,
-			height: 240,
-		});
-	}, [editor]);
-
-	if (!editor) {
-		return null;
-	}
-
-	const addImage = () => {
-		const url = window.prompt('URL');
-
-		if (url) {
-			editor?.chain().focus().setImage({ src: url }).run();
-		}
-	};
+	if (!editor) return null;
 
 	return (
-		<div>
+		<div className="flex items-center">
 			<Toggle
 				pressed={editor.isActive('heading')}
 				size="sm"
 				onPressedChange={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
 			>
-				<Heading1 className="w-4 h-4" />
+				<LucideIcon name="Heading1" className="w-4 h-4" />
 			</Toggle>
 			<Toggle
 				pressed={editor.isActive('bold')}
 				size="sm"
 				onPressedChange={() => editor.chain().focus().toggleBold().run()}
 			>
-				<Bold className="w-4 h-4" />
+				<LucideIcon name="Bold" size={10} className="w-4 h-4" />
 			</Toggle>
 			<Toggle
 				pressed={editor.isActive('strikethrough')}
 				size="sm"
 				onPressedChange={() => editor.chain().focus().toggleStrike().run()}
 			>
-				<Strikethrough className="w-4 h-4" />
+				<LucideIcon name="Strikethrough" className="w-4 h-4" />
 			</Toggle>
 			<Toggle
 				pressed={editor.isActive('italic')}
 				size="sm"
 				onPressedChange={() => editor.chain().focus().toggleItalic().run()}
 			>
-				<Italic className="w-4 h-4" />
+				<LucideIcon name="Italic" className="w-4 h-4" />
 			</Toggle>
 			<Toggle
 				pressed={editor.isActive('bulletList')}
 				size="sm"
 				onPressedChange={() => editor.chain().focus().toggleBulletList().run()}
 			>
-				<List className="w-4 h-4" />
+				<LucideIcon name="List" className="w-4 h-4" />
 			</Toggle>
 			<Toggle
 				pressed={editor.isActive('orderedList')}
 				size="sm"
 				onPressedChange={() => editor.chain().focus().toggleOrderedList().run()}
 			>
-				<ListOrdered className="w-4 h-4" />
+				<LucideIcon name="ListOrdered" className="w-4 h-4" />
 			</Toggle>
 			<Toggle pressed={editor.isActive('youtube')} size="sm" onPressedChange={() => setYoutube()}>
-				<Youtube className="w-4 h-4" />
+				<LucideIcon name="Youtube" className="w-4 h-4" />
 			</Toggle>
 			<Toggle pressed={editor.isActive('image')} size="sm" onPressedChange={() => addImage()}>
-				<ImageIcon className="w-4 h-4" />
-				{/* <input type="file" className="hidden" id="upload" onChange={handleChange} /> */}
+				<LucideIcon name="Image" className="w-4 h-4" />
 			</Toggle>
+			<span className="inline-flex items-center justify-center w-6 ">
+				<input
+					type="color"
+					className="w-full bg-white"
+					onInput={(event: React.ChangeEvent<HTMLInputElement>) =>
+						editor.chain().focus().setColor(event.target.value).run()
+					}
+					data-testid="setColor"
+					value={editor?.getAttributes('textStyle').color as string}
+				/>
+			</span>
+			<span className="inline-flex items-center justify-center w-6 ">
+				<input id="imgFile" className="hidden" type="file" onChange={(e) => addInputImage(e)} />
+				<label htmlFor="imgFile">
+					<LucideIcon name="File" className="w-4 h-4" />
+				</label>
+			</span>
 		</div>
 	);
 }
